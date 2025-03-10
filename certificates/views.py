@@ -3,6 +3,7 @@ import os
 from django.http import FileResponse, Http404
 from django.conf import settings
 from django.views import View
+from django.utils.encoding import smart_str
 
 class GenerateCertificateView(View):
     def get(self, request, email):
@@ -14,11 +15,13 @@ class GenerateCertificateView(View):
             raise Http404("Sertifikat shabloni topilmadi!")
 
         # Foydalanuvchi ismini olish (email-dan ajratish yoki bazadan olish)
-        user_name = email.split("@")[0].replace(".", " ").title()  # Misol uchun: lazizbek.shukurov -> Lazizbek Shukurov
+        user_name = email.split("@")[0].replace(".", " ").title()  # Masalan: lazizbek.shukurov -> Lazizbek Shukurov
 
         # Sertifikatni yangi fayl sifatida yaratish
-        output_path = os.path.join(settings.MEDIA_ROOT, "generated", f"{email}.pdf")
-        os.makedirs(os.path.dirname(output_path), exist_ok=True)  # Papkani yaratish
+        output_dir = os.path.join(settings.MEDIA_ROOT, "generated")
+        os.makedirs(output_dir, exist_ok=True)  # Papkani yaratish
+
+        output_path = os.path.join(output_dir, f"{email}.pdf")
 
         # PDF-ni ochamiz
         doc = fitz.open(template_path)
@@ -27,7 +30,7 @@ class GenerateCertificateView(View):
         # Matnni joylashtirish (X, Y koordinatalarini moslang)
         text = user_name
         font_size = 30  # Shrift o‘lchami
-        x, y = 270, 350  # Ismni joylashtirish koordinatalari (ehtiyojga qarab o‘zgartiring)
+        x, y = 270, 350  # Ismni joylashtirish koordinatalari
 
         # Matnni joylashtirish
         page.insert_text((x, y), text, fontsize=font_size, color=(0, 0, 0))
@@ -36,5 +39,7 @@ class GenerateCertificateView(View):
         doc.save(output_path)
         doc.close()
 
-        # PDF faylni foydalanuvchiga yuborish
-        return FileResponse(open(output_path, "rb"), content_type="application/pdf")
+        # Faylni foydalanuvchiga inline yoki attachment sifatida yuborish
+        response = FileResponse(open(output_path, "rb"), content_type="application/pdf")
+        response["Content-Disposition"] = f'inline; filename="{smart_str(email)}.pdf"'  # inline → sahifada ochish
+        return response
