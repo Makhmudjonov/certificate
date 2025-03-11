@@ -1,45 +1,41 @@
 import fitz  # PyMuPDF
 import os
-from django.http import FileResponse, Http404
+from django.http import JsonResponse, Http404
 from django.conf import settings
 from django.views import View
-from django.utils.encoding import smart_str
 
 class GenerateCertificateView(View):
     def get(self, request, email):
-        # Asl shablon PDF faylini tanlash
+        # Asl shablon PDF faylini olish
         template_path = os.path.join(settings.MEDIA_ROOT, "certificates", "certificate_template.pdf")
-
-        # Agar shablon mavjud bo‘lmasa, xatolik chiqarish
         if not os.path.exists(template_path):
             raise Http404("Sertifikat shabloni topilmadi!")
 
-        # Foydalanuvchi ismini olish (email-dan ajratish yoki bazadan olish)
-        user_name = email.split("@")[0].replace(".", " ").title()  # Masalan: lazizbek.shukurov -> Lazizbek Shukurov
+        # Foydalanuvchi ismini chiqarish
+        user_name = email.split("@")[0].replace(".", " ").title()
 
-        # Sertifikatni yangi fayl sifatida yaratish
+        # Generatsiya qilingan sertifikatlar katalogi
         output_dir = os.path.join(settings.MEDIA_ROOT, "generated")
-        os.makedirs(output_dir, exist_ok=True)  # Papkani yaratish
+        os.makedirs(output_dir, exist_ok=True)  # Katalog yaratish
 
+        # Foydalanuvchi sertifikati yo‘li
         output_path = os.path.join(output_dir, f"{email}.pdf")
 
-        # PDF-ni ochamiz
+        # PDFni ochish va o‘zgartirish
         doc = fitz.open(template_path)
-        page = doc[0]  # 1-sahifani tanlaymiz
+        page = doc[0]  # 1-sahifa
 
-        # Matnni joylashtirish (X, Y koordinatalarini moslang)
+        # Sertifikatga matn yozish
         text = user_name
-        font_size = 30  # Shrift o‘lchami
-        x, y = 270, 350  # Ismni joylashtirish koordinatalari
+        font_size = 30  
+        x, y = 270, 350  
 
-        # Matnni joylashtirish
         page.insert_text((x, y), text, fontsize=font_size, color=(0, 0, 0))
 
         # Yangi PDFni saqlash
         doc.save(output_path)
         doc.close()
 
-        # Faylni foydalanuvchiga inline yoki attachment sifatida yuborish
-        response = FileResponse(open(output_path, "rb"), content_type="application/pdf")
-        response["Content-Disposition"] = f'inline; filename="{smart_str(email)}.pdf"'  # inline → sahifada ochish
-        return response
+        # Fayl yo‘lini qaytarish (JSON formatda)
+        file_url = f"/media/generated/{email}.pdf"
+        return JsonResponse({"file_url": file_url})
