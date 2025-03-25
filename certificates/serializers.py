@@ -1,7 +1,10 @@
 from rest_framework import serializers
-from .models import Certificate
+from .models import User
 
-class CertificateSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Certificate
+        model = User
         fields = "__all__"
+        extra_kwargs = {
+            "orin": {"required": False, "allow_null": True}  # ✅ Ixtiyoriy va null bo‘lishi mumkin
+        }

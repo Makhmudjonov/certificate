@@ -1,0 +1,18 @@
+[
+    {
+        "full_name": "John Doe",
+        "email": "john@example.com",
+        "fan": "5.5. Biological chemistry",
+        "otm_name": "Harvard University",
+        "orin": 1,
+        "musobaqa_nomi": "Science Olympiad"
+    },
+    {
+        "full_name": "Jane Smith",
+        "email": "jane@example.com",
+        "fan": "10.1. Advanced Physics",
+        "otm_name": "MIT",
+        "orin": 2,
+        "musobaqa_nomi": "Physics Competition"
+    }
+]
