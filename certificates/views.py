@@ -5,7 +5,7 @@ from django.http import JsonResponse, Http404
 from django.conf import settings
 from django.views import View
 from pdf2image import convert_from_path
-from .models import User  # User modelini import qilamiz
+from .models import User  
 
 class GenerateCertificateView(View):
     def get(self, request, email):
@@ -20,14 +20,12 @@ class GenerateCertificateView(View):
         pdf_path = os.path.join(output_dir, f"{email}.pdf")
         image_path = os.path.join(output_dir, f"{email}.jpg")
 
-        # **Agar allaqachon mavjud bo‘lsa, URL qaytaramiz**
         if os.path.exists(pdf_path) and os.path.exists(image_path):
             return JsonResponse({
                 "file_url": f"/media/generated/{email}.pdf",
                 "image_url": f"/media/generated/{email}.jpg"
             })
 
-        # **Shablonni tekshiramiz**
         template_path = os.path.join(settings.MEDIA_ROOT, "certificates", "certificate_template1.pdf")
         if not os.path.exists(template_path):
             raise Http404("Sertifikat shabloni topilmadi!")
@@ -35,7 +33,6 @@ class GenerateCertificateView(View):
         doc = fitz.open(template_path)
         page = doc[0]
 
-        # **Foydalanuvchi ismi va fan**
         text = user.full_name  
         fan = getattr(user, "fan", "Fan nomi mavjud emas")
 
@@ -44,7 +41,6 @@ class GenerateCertificateView(View):
         font_name = "times-bolditalic"
         color_blue = (37/255, 59/255, 128/255)
 
-        # **Matn uzunligiga qarab joylashuvni moslashtirish**
         font = fitz.Font(font_name)
         text_width = font.text_length(text, fontsize=font_size)
         max_width = 300  
@@ -55,7 +51,6 @@ class GenerateCertificateView(View):
         page.insert_text((x, y), text, fontsize=font_size, fontname=font_name, color=color_blue)
         page.insert_text((x1, y1), fan, fontsize=fan_font_size, fontname=font_name, color=color_blue)
 
-        # **QR kod yaratish**
         qr_data = f"https://cert.tma.uz/media/generated/{email}.pdf"
         qr = qrcode.QRCode(box_size=10, border=5)
         qr.add_data(qr_data)
@@ -75,17 +70,27 @@ class GenerateCertificateView(View):
 
         # **PDF'ni JPG ga aylantirish**
         try:
-            images = convert_from_path(pdf_path, dpi=300)  # DPI = 300 qilib yaxshiroq sifat olamiz
-            if images:
-                images[0].save(image_path, "JPEG")
+            poppler_path = None
+            if os.name == 'nt':  # Windows
+                poppler_path = r"C:\poppler\bin"
+
+            print(f"PDF mavjudmi? {os.path.exists(pdf_path)}")  
+            images = convert_from_path(pdf_path, dpi=300, poppler_path=poppler_path)
+
+            if not images:
+                raise Exception("PDF'ni rasmga aylantirishda muammo bor!")
+
+            images[0].save(image_path, "JPEG")
+
+            print(f"JPG mavjudmi? {os.path.exists(image_path)}")  
 
             if not os.path.exists(image_path):
                 raise Exception("JPG fayl saqlanmadi!")
 
         except Exception as e:
+            print(f"Xatolik: {str(e)}")
             return JsonResponse({"error": f"PDF'ni JPG ga aylantirishda xatolik: {str(e)}"}, status=500)
 
-        # **Ortiqcha QR kodni o‘chiramiz**
         if os.path.exists(qr_path):
             os.remove(qr_path)
 
