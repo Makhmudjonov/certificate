@@ -5,7 +5,6 @@ from django.http import JsonResponse, Http404
 from django.conf import settings
 from django.views import View
 from pdf2image import convert_from_path
-from django.core.files.storage import default_storage
 from .models import User  # User modelini import qilamiz
 
 class GenerateCertificateView(View):
@@ -21,12 +20,14 @@ class GenerateCertificateView(View):
         pdf_path = os.path.join(output_dir, f"{email}.pdf")
         image_path = os.path.join(output_dir, f"{email}.jpg")
 
+        # **Agar allaqachon mavjud bo‘lsa, URL qaytaramiz**
         if os.path.exists(pdf_path) and os.path.exists(image_path):
             return JsonResponse({
                 "file_url": f"/media/generated/{email}.pdf",
                 "image_url": f"/media/generated/{email}.jpg"
             })
 
+        # **Shablonni tekshiramiz**
         template_path = os.path.join(settings.MEDIA_ROOT, "certificates", "certificate_template1.pdf")
         if not os.path.exists(template_path):
             raise Http404("Sertifikat shabloni topilmadi!")
@@ -34,7 +35,7 @@ class GenerateCertificateView(View):
         doc = fitz.open(template_path)
         page = doc[0]
 
-        # Foydalanuvchi ismi va fan
+        # **Foydalanuvchi ismi va fan**
         text = user.full_name  
         fan = getattr(user, "fan", "Fan nomi mavjud emas")
 
@@ -43,10 +44,10 @@ class GenerateCertificateView(View):
         font_name = "times-bolditalic"
         color_blue = (37/255, 59/255, 128/255)
 
+        # **Matn uzunligiga qarab joylashuvni moslashtirish**
         font = fitz.Font(font_name)
         text_width = font.text_length(text, fontsize=font_size)
         max_width = 300  
-
         x = 300 - (text_width / 3) if text_width < max_width else 180
         y = 350  
         x1, y1 = 350, 400  
@@ -73,10 +74,18 @@ class GenerateCertificateView(View):
         doc.close()
 
         # **PDF'ni JPG ga aylantirish**
-        images = convert_from_path(pdf_path)
-        if images:
-            images[0].save(image_path, 'JPEG')
+        try:
+            images = convert_from_path(pdf_path, dpi=300)  # DPI = 300 qilib yaxshiroq sifat olamiz
+            if images:
+                images[0].save(image_path, "JPEG")
 
+            if not os.path.exists(image_path):
+                raise Exception("JPG fayl saqlanmadi!")
+
+        except Exception as e:
+            return JsonResponse({"error": f"PDF'ni JPG ga aylantirishda xatolik: {str(e)}"}, status=500)
+
+        # **Ortiqcha QR kodni o‘chiramiz**
         if os.path.exists(qr_path):
             os.remove(qr_path)
 
