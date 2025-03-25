@@ -8,6 +8,16 @@ from django.urls import path
 from django.http import HttpResponse
 
 
+class Certificate(models.Model):
+    email = models.EmailField(unique=True)
+    pdf_file = models.FileField(upload_to='certificates/')
+    image_file = models.ImageField(upload_to='certificates/images/', blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.email
+
+
 class User(models.Model):
     ORIN_CHOICES = [
         (1, "1-o'rin"),
