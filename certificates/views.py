@@ -1,10 +1,10 @@
-import fitz  # PyMuPDF
-import os
-import qrcode
 from django.http import JsonResponse, Http404
 from django.conf import settings
 from django.views import View
-from .models import User  # User modelini import qilamiz
+from .models import User
+from PIL import Image, ImageDraw, ImageFont
+import os
+import qrcode
 
 class GenerateCertificateView(View):
     def get(self, request, email):
@@ -16,46 +16,61 @@ class GenerateCertificateView(View):
         output_dir = os.path.join(settings.MEDIA_ROOT, "generated")
         os.makedirs(output_dir, exist_ok=True)
 
-        output_path = os.path.join(output_dir, f"{email}.pdf")
+        output_path = os.path.join(output_dir, f"{email}.jpg")
 
         if os.path.exists(output_path):
-            file_url = f"/media/generated/{email}.pdf"
+            file_url = f"/media/generated/{email}.jpg"
             return JsonResponse({"file_url": file_url})
 
-        template_path = os.path.join(settings.MEDIA_ROOT, "certificates", "certificate_template1.pdf")
+        template_path = os.path.join(settings.MEDIA_ROOT, "certificates", "certificate_template1.jpg")
         if not os.path.exists(template_path):
             raise Http404("Sertifikat shabloni topilmadi!")
 
-        doc = fitz.open(template_path)
-        page = doc[0]
+        # Rasmni ochish
+        img = Image.open(template_path)
+        draw = ImageDraw.Draw(img)
 
         # Foydalanuvchi ismi va fan
         text = user.full_name  
-        fan = getattr(user, "fan", "Fan nomi mavjud emas")
+        fan = user.fan
 
-        font_size = 26
-        fan_font_size = 14
-        font_name = "times-bolditalic"
-        color_blue = (37/255, 59/255, 128/255)
+        font_size = 110
+        fan_font_size = 70
+        font_path = os.path.join(settings.MEDIA_ROOT, "font", "times.ttf")  # O'zingizga mos font faylini ko'rsating
+
+        # Tekshirish va fontni yuklash
+        if not os.path.exists(font_path):
+            raise Http404("Font topilmadi!")
+
+        try:
+            font = ImageFont.truetype(font_path, font_size)
+            fan_font = ImageFont.truetype(font_path, fan_font_size)
+        except IOError:
+            return JsonResponse({"error": "Fontni ochishda xatolik!"}, status=500)
 
         # **Matn uzunligiga qarab x koordinatani aniqlash**
-        font = fitz.Font(font_name)
-        text_width = font.text_length(text, fontsize=font_size)
-        max_width = 300  
+        text_bbox = draw.textbbox((0, 0), text, font=font)
+        text_width = len(user.full_name)  # width of the text
+        max_width = 25  
 
         if text_width < max_width:
-            x = 300 - (text_width / 3)  # O'rtaga moslash
+            x = 1450  # O'rtaga moslash
         else:
-            x = 180  # Uzoq ism bo‘lsa chapga yaqinroq 
+            x = 800  # Uzoq ism bo‘lsa chapga yaqinroq 
 
-        y = 350  
-        x1, y1 = 350, 400  # Fan joylashuvi
+        y = 1380  # Ismni joylashuvi (vertikal)
+        x1, y1 = 1450, 1630  # Fan joylashuvi (vertikal)
 
-        page.insert_text((x, y), text, fontsize=font_size, fontname=font_name, color=color_blue)
-        page.insert_text((x1, y1), fan, fontsize=fan_font_size, fontname=font_name, color=color_blue)
+        # Matnni joylashtirish
+        draw.text((x, y), text, font=font, fill=(37, 59, 128))  # Ko'k rang
+        draw.text((x1, y1), fan, font=fan_font, fill=(37, 59, 128))
 
-        qr_data = f"https://cert.tma.uz/media/generated/{email}.pdf"
-        qr = qrcode.QRCode(box_size=10, border=5)
+        # Debugging: Save intermediate image to check if text is placed correctly
+        img.save(os.path.join(settings.MEDIA_ROOT, "generated", "debug_image.jpg"))
+
+        # QR-kod yaratish
+        qr_data = f"https://cert.tma.uz/media/generated/{email}.jpg"
+        qr = qrcode.QRCode(box_size=10, border=0)
         qr.add_data(qr_data)
         qr.make(fit=True)
         
@@ -63,16 +78,16 @@ class GenerateCertificateView(View):
         qr_path = os.path.join(output_dir, f"{email}_qr.png")
         qr_img.save(qr_path)
 
-        if os.path.exists(qr_path):
-            img = fitz.Pixmap(qr_path)
-            rect = fitz.Rect(40, 342, 120, 422)
-            page.insert_image(rect, pixmap=img)
+        # QR-kodni rasmga joylashtirish
+        qr_img = Image.open(qr_path)
+        img.paste(qr_img, (150, 1422))  # Joylashuvni tekshirish
 
-        doc.save(output_path)
-        doc.close()
+        # Rasmni saqlash
+        img.save(output_path)
 
+        # QR rasmni o'chirish
         if os.path.exists(qr_path):
             os.remove(qr_path)
 
-        file_url = f"/media/generated/{email}.pdf"
+        file_url = f"/media/generated/{email}.jpg"
         return JsonResponse({"file_url": file_url})
