@@ -168,3 +168,4 @@ CSRF_TRUSTED_ORIGINS = [
     'https://mforms.uz',
 ]
 
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 5000  # Increase this number as needed
