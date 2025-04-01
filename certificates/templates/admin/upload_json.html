@@ -1,0 +1,11 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<h2>JSON Faylni Yuklash</h2>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="button">Yuklash</button>
+</form>
+<a href="{% url 'admin:index' %}">⬅️ Orqaga qaytish</a>
+{% endblock %}

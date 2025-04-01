@@ -1,0 +1,7 @@
+"venv/" 
+"*.pyc" 
+"__pycache__/" 
+"db.sqlite3" 
+".env" 
+"media/generated"
+"media/certificates/opencv-4.11.0-windows.exe"
