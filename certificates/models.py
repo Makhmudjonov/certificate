@@ -28,17 +28,13 @@ class User(models.Model):
     full_name = models.CharField(max_length=255)
     email = models.EmailField(unique=True, null=True, blank=True)
     fan = models.CharField(max_length=255)
-<<<<<<< HEAD
     otm_name = models.CharField(max_length=255,null=True, blank=True)
     orin = models.PositiveIntegerField(choices=ORIN_CHOICES, null=True, blank=True)  # ✅ Null va ixtiyoriy
     musobaqa_nomi = models.CharField(max_length=255, null=True, blank=True)
     certificate_number = models.CharField(max_length=255,unique=True, null=True, blank=True)
-    
-=======
     otm_name = models.CharField(max_length=255)
     orin = models.PositiveIntegerField(choices=ORIN_CHOICES, null=True, blank=True)  # ✅ Null va ixtiyoriy
     musobaqa_nomi = models.CharField(max_length=255)
->>>>>>> 094d34a5c8fe0bd61950bc6de71536cdf19ff741
 
     def __str__(self):
         return f"{self.full_name} - {self.musobaqa_nomi}"
@@ -57,16 +53,13 @@ class User(models.Model):
                     defaults={
                         "full_name": item["full_name"],
                         "fan": fan_nom,  # ✅ Tozalangan fan nomi saqlanadi
-<<<<<<< HEAD
                         "otm_name": item["otm_name"] if "otm_name" in item else None,
                         "orin": item["orin"] if "orin" in item else None,
                         "musobaqa_nomi": item["musobaqa_nomi"] if "musobaqa_nomi" in item else None,
-                        "certificate_number" : item["certificate_number"] if "certificate_number" in item else None
-=======
+                        "certificate_number" : item["certificate_number"] if "certificate_number" in item else None,
                         "otm_name": item["otm_name"],
                         "orin": item["orin"],
                         "musobaqa_nomi": item["musobaqa_nomi"]
->>>>>>> 094d34a5c8fe0bd61950bc6de71536cdf19ff741
                     }
                 )
                 if not created:
