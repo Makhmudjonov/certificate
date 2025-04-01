@@ -3,8 +3,5 @@
 "__pycache__/" 
 "db.sqlite3" 
 ".env" 
-<<<<<<< HEAD
 "media/generated"
 "media/certificates/opencv-4.11.0-windows.exe"
-=======
->>>>>>> 094d34a5c8fe0bd61950bc6de71536cdf19ff741
