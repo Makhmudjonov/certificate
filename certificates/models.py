@@ -32,9 +32,6 @@ class User(models.Model):
     orin = models.PositiveIntegerField(choices=ORIN_CHOICES, null=True, blank=True)  # ✅ Null va ixtiyoriy
     musobaqa_nomi = models.CharField(max_length=255, null=True, blank=True)
     certificate_number = models.CharField(max_length=255,unique=True, null=True, blank=True)
-    otm_name = models.CharField(max_length=255)
-    orin = models.PositiveIntegerField(choices=ORIN_CHOICES, null=True, blank=True)  # ✅ Null va ixtiyoriy
-    musobaqa_nomi = models.CharField(max_length=255)
 
     def __str__(self):
         return f"{self.full_name} - {self.musobaqa_nomi}"
@@ -57,9 +54,6 @@ class User(models.Model):
                         "orin": item["orin"] if "orin" in item else None,
                         "musobaqa_nomi": item["musobaqa_nomi"] if "musobaqa_nomi" in item else None,
                         "certificate_number" : item["certificate_number"] if "certificate_number" in item else None,
-                        "otm_name": item["otm_name"],
-                        "orin": item["orin"],
-                        "musobaqa_nomi": item["musobaqa_nomi"]
                     }
                 )
                 if not created:
