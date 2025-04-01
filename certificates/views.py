@@ -22,11 +22,7 @@ class GenerateCertificateView(View):
             file_url = f"/media/generated/{email}.jpg"
             return JsonResponse({"file_url": file_url})
 
-<<<<<<< HEAD
         template_path = os.path.join(settings.MEDIA_ROOT, "certificates", "nomination_template.jpg")
-=======
-        template_path = os.path.join(settings.MEDIA_ROOT, "certificates", "certificate_template1.jpg")
->>>>>>> 094d34a5c8fe0bd61950bc6de71536cdf19ff741
         if not os.path.exists(template_path):
             raise Http404("Sertifikat shabloni topilmadi!")
 
@@ -37,7 +33,6 @@ class GenerateCertificateView(View):
         # Foydalanuvchi ismi va fan
         text = user.full_name  
         fan = user.fan
-<<<<<<< HEAD
         code = user.certificate_number
 
         font_size = 110
@@ -45,26 +40,15 @@ class GenerateCertificateView(View):
         fan_font_size2 = 40
         font_path = os.path.join(settings.MEDIA_ROOT, "font", "times.ttf")  # O'zingizga mos font faylini ko'rsating
         bold_font_path = os.path.join(settings.MEDIA_ROOT, "font", "times_bold.ttf")  # O'zingizga mos font faylini ko'rsating
-=======
-
-        font_size = 110
-        fan_font_size = 70
-        font_path = os.path.join(settings.MEDIA_ROOT, "font", "times.ttf")  # O'zingizga mos font faylini ko'rsating
->>>>>>> 094d34a5c8fe0bd61950bc6de71536cdf19ff741
 
         # Tekshirish va fontni yuklash
         if not os.path.exists(font_path):
             raise Http404("Font topilmadi!")
 
         try:
-<<<<<<< HEAD
             font = ImageFont.truetype(bold_font_path, font_size)
             fan_font = ImageFont.truetype(bold_font_path, fan_font_size)
             fan_font2 = ImageFont.truetype(font_path, fan_font_size2)
-=======
-            font = ImageFont.truetype(font_path, font_size)
-            fan_font = ImageFont.truetype(font_path, fan_font_size)
->>>>>>> 094d34a5c8fe0bd61950bc6de71536cdf19ff741
         except IOError:
             return JsonResponse({"error": "Fontni ochishda xatolik!"}, status=500)
 
@@ -78,33 +62,21 @@ class GenerateCertificateView(View):
         else:
             x = 800  # Uzoq ism bo‘lsa chapga yaqinroq 
 
-<<<<<<< HEAD
         y = 1370  # Ismni joylashuvi (vertikal)
         x1, y1 = 1450, 1620  # Fan joylashuvi (vertikal)
         x2, y2 = 190, 1550  # Fan joylashuvi (vertikal)
-=======
-        y = 1380  # Ismni joylashuvi (vertikal)
-        x1, y1 = 1450, 1630  # Fan joylashuvi (vertikal)
->>>>>>> 094d34a5c8fe0bd61950bc6de71536cdf19ff741
 
         # Matnni joylashtirish
         draw.text((x, y), text, font=font, fill=(37, 59, 128))  # Ko'k rang
         draw.text((x1, y1), fan, font=fan_font, fill=(37, 59, 128))
-<<<<<<< HEAD
         draw.text((x2, y2), code, font=fan_font2, fill=(37, 59, 128))
-=======
->>>>>>> 094d34a5c8fe0bd61950bc6de71536cdf19ff741
 
         # Debugging: Save intermediate image to check if text is placed correctly
         img.save(os.path.join(settings.MEDIA_ROOT, "generated", "debug_image.jpg"))
 
         # QR-kod yaratish
         qr_data = f"https://cert.tma.uz/media/generated/{email}.jpg"
-<<<<<<< HEAD
         qr = qrcode.QRCode(box_size=9.5, border=0)
-=======
-        qr = qrcode.QRCode(box_size=10, border=0)
->>>>>>> 094d34a5c8fe0bd61950bc6de71536cdf19ff741
         qr.add_data(qr_data)
         qr.make(fit=True)
         
@@ -114,11 +86,7 @@ class GenerateCertificateView(View):
 
         # QR-kodni rasmga joylashtirish
         qr_img = Image.open(qr_path)
-<<<<<<< HEAD
         img.paste(qr_img, (175, 1200))  # Joylashuvni tekshirish
-=======
-        img.paste(qr_img, (150, 1422))  # Joylashuvni tekshirish
->>>>>>> 094d34a5c8fe0bd61950bc6de71536cdf19ff741
 
         # Rasmni saqlash
         img.save(output_path)
