@@ -75,7 +75,7 @@ class GenerateCertificateView(View):
         img.save(os.path.join(settings.MEDIA_ROOT, "generated", "debug_image.jpg"))
 
         # QR-kod yaratish
-        qr_data = f"https://cert.tma.uz/media/generated/{email}.jpg"
+        qr_data = f"https://mforms.uz/media/generated/{email}.jpg"
         qr = qrcode.QRCode(box_size=9.5, border=0)
         qr.add_data(qr_data)
         qr.make(fit=True)
