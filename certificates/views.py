@@ -31,15 +31,15 @@ class GenerateCertificateView(View):
         draw = ImageDraw.Draw(img)
 
         # Foydalanuvchi ismi va fan
-        text = user.full_name  
-        fan = user.fan
-        code = user.certificate_number
+        text = user.full_name or ""
+        fan = user.fan or ""
+        code = user.certificate_number or ""
 
         font_size = 110
         fan_font_size = 70
         fan_font_size2 = 40
-        font_path = os.path.join(settings.MEDIA_ROOT, "font", "times.ttf")  # O'zingizga mos font faylini ko'rsating
-        bold_font_path = os.path.join(settings.MEDIA_ROOT, "font", "times_bold.ttf")  # O'zingizga mos font faylini ko'rsating
+        font_path = os.path.join(settings.MEDIA_ROOT, "font", "5555-bold.ttf")  # O'zingizga mos font faylini ko'rsating
+        bold_font_path = os.path.join(settings.MEDIA_ROOT, "font", "5555-bold.ttf")  # O'zingizga mos font faylini ko'rsating
 
         # Tekshirish va fontni yuklash
         if not os.path.exists(font_path):

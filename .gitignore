@@ -1,7 +1,18 @@
-"venv/" 
-"*.pyc" 
-"__pycache__/" 
-"db.sqlite3" 
-".env" 
-"media/generated"
-"media/certificates/opencv-4.11.0-windows.exe"
+# Virtual environments
+myvenv/
+myenv/
+venv/
+
+# Python bytecode files
+*.pyc
+__pycache__/
+
+# SQLite database file
+db.sqlite3
+
+# Environment variables file
+.env
+
+# Media directories for generated files and certificates
+media/generated/
+media/certificates/
